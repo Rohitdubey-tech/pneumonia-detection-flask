@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Live X-ray Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-align: center;
+}
+
+.header {
+    padding: 15px;
+    font-size: 18px;
+    background: #111;
+}
+
+video, img {
+    width: 100%;
+    max-height: 70vh;
+    object-fit: cover;
+}
+
+.controls {
+    padding: 20px;
+}
+
+button {
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.capture {
+    background: #00c853;
+    color: black;
+}
+
+.scan {
+    background: #2962ff;
+    color: white;
+}
+
+.status {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+.error {
+    color: #ff5252;
+}
+
+.result {
+    margin-top: 10px;
+    font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Chest X-ray Live Scanner</div>
+
+<video id="video" autoplay></video>
+<img id="preview" style="display:none">
+<canvas id="canvas" hidden></canvas>
+
+<div class="controls">
+    <button class="capture" onclick="capture()">📸 Capture</button>
+    <button class="scan" onclick="scan()">🔍 Scan</button>
+</div>
+
+<div id="status" class="status">Point camera at X-ray and capture</div>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const preview = document.getElementById("preview");
+const statusText = document.getElementById("status");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => video.srcObject = stream);
+
+let imageData = null;
+
+function capture() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    imageData = canvas.toDataURL("image/jpeg");
+
+    preview.src = imageData;
+    preview.style.display = "block";
+    video.style.display = "none";
+
+    statusText.innerHTML = "Image captured. Tap Scan.";
+}
+
+function scan() {
+    if (!imageData) {
+        statusText.innerHTML = "<span class='error'>Please capture image first</span>";
+        return;
+    }
+
+    statusText.innerHTML = "Scanning…";
+
+    fetch("/scan_camera", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.error) {
+            statusText.innerHTML = `<span class='error'>${d.error}</span>`;
+        } else {
+            statusText.innerHTML =
+                `<div class='result'><b>${d.prediction}</b><br>${d.confidence}%</div>`;
+        }
+    });
+}
+</script>
+
+</body>
+</html>

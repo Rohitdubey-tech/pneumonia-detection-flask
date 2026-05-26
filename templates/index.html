@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pneumonia Detection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background: #ffffff;
+    width: 420px;
+    padding: 28px;
+    border-radius: 18px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+    color: #203a43;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 10px 0 25px;
+}
+
+.mode-switch {
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.mode-switch a {
+    color: #2962ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.upload-box {
+    border: 2px dashed #b0bec5;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+input[type=file] {
+    width: 100%;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #203a43;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2c5364;
+}
+
+.error {
+    margin-top: 15px;
+    color: #d32f2f;
+    font-size: 14px;
+}
+
+.preview img {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 15px;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f4f6f8;
+}
+
+.normal { color: #2e7d32; font-weight: bold; }
+.pneumonia { color: #c62828; font-weight: bold; }
+
+footer {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #888;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Pneumonia Detection</h1>
+    <div class="subtitle">Upload Chest X-ray for AI Analysis</div>
+
+    <div class="mode-switch">
+        Want live scanning? → <a href="/camera">Use Camera Scanner</a>
+    </div>
+
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="upload-box">
+            <input type="file" name="file" accept="image/*" required>
+        </div>
+        <button type="submit">Upload & Analyze</button>
+    </form>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if image_path %}
+        <div class="preview">
+            <h3>Original X-ray</h3>
+            <img src="{{ image_path }}">
+        </div>
+
+        <div class="preview">
+            <h3>Scanned Image</h3>
+            <img src="{{ scanned_path }}">
+        </div>
+
+        <div class="result">
+            <h2 class="{% if prediction == 'NORMAL' %}normal{% else %}pneumonia{% endif %}">
+                {{ prediction }}
+            </h2>
+            <p>Confidence: {{ confidence }}%</p>
+        </div>
+    {% endif %}
+
+    <footer>
+        Upload mode • OpenCV + PyTorch
+    </footer>
+</div>
+
+</body>
+</html>
