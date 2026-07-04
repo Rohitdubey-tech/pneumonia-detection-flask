@@ -1,5 +1,6 @@
+flask
+gunicorn
 torch
 torchvision
 pillow
 numpy
-gunicorn
